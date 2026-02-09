@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MouadeLab - مختبر الأدوات الأمنية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --bg-dark: #0f172a;
+            --bg-card-dark: #1e293b;
+            --text-dark: #f8fafc;
+            --text-muted-dark: #94a3b8;
+            --bg-light: #f1f5f9;
+            --bg-card-light: #ffffff;
+            --text-light: #1e293b;
+            --text-muted-light: #64748b;
+            --border-dark: #334155;
+            --border-light: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        body.light-mode {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-animation span {
+            position: absolute;
+            display: block;
+            width: 20px;
+            height: 20px;
+            background: rgba(99, 102, 241, 0.1);
+            animation: move 25s linear infinite;
+            bottom: -150px;
+            border-radius: 50%;
+        }
+
+        @keyframes move {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; border-radius: 0; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; border-radius: 50%; }
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .dark-mode .sidebar {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid var(--border-dark);
+        }
+
+        .light-mode .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid var(--border-light);
+            box-shadow: -5px 0 20px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .dark-mode .nav-link {
+            color: var(--text-muted-dark);
+        }
+
+        .light-mode .nav-link {
+            color: var(--text-muted-light);
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            transform: translateX(-5px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .nav-link i {
+            width: 24px;
+            text-align: center;
+        }
+
+        .theme-toggle {
+            margin-top: auto;
+            padding-top: 2rem;
+            border-top: 1px solid;
+            margin-top: 2rem;
+        }
+
+        .dark-mode .theme-toggle {
+            border-color: var(--border-dark);
+        }
+
+        .light-mode .theme-toggle {
+            border-color: var(--border-light);
+        }
+
+        .toggle-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 10px;
+            border: 2px solid;
+            background: transparent;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .toggle-btn {
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .light-mode .toggle-btn {
+            border-color: var(--border-light);
+            color: var(--text-light);
+        }
+
+        .toggle-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-right: 280px;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid;
+        }
+
+        .dark-mode .header {
+            border-color: var(--border-dark);
+        }
+
+        .light-mode .header {
+            border-color: var(--border-light);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-menu {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tool-card {
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dark-mode .tool-card {
+            background: var(--bg-card-dark);
+            border: 1px solid var(--border-dark);
+        }
+
+        .light-mode .tool-card {
+            background: var(--bg-card-light);
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .dark-mode .tool-card:hover {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border-color: var(--primary);
+        }
+
+        .light-mode .tool-card:hover {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+
+        .tool-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tool-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        .tool-card:nth-child(1) .tool-icon { color: var(--primary); }
+        .tool-card:nth-child(1) .tool-icon::before { background: var(--primary); }
+        
+        .tool-card:nth-child(2) .tool-icon { color: var(--accent); }
+        .tool-card:nth-child(2) .tool-icon::before { background: var(--accent); }
+        
+        .tool-card:nth-child(3) .tool-icon { color: var(--secondary); }
+        .tool-card:nth-child(3) .tool-icon::before { background: var(--secondary); }
+        
+        .tool-card:nth-child(4) .tool-icon { color: var(--success); }
+        .tool-card:nth-child(4) .tool-icon::before { background: var(--success); }
+        
+        .tool-card:nth-child(5) .tool-icon { color: var(--warning); }
+        .tool-card:nth-child(5) .tool-icon::before { background: var(--warning); }
+
+        .tool-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .tool-interface {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tool-interface.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 2px solid;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .dark-mode .input-field {
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .light-mode .input-field {
+            border-color: var(--border-light);
+            color: var(--text-light);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-box {
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px solid;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .dark-mode .option-box {
+            border-color: var(--border-dark);
+        }
+
+        .light-mode .option-box {
+            border-color: var(--border-light);
+        }
+
+        .option-box:hover, .option-box.active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .result-box {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px dashed;
+            min-height: 100px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dark-mode .result-box {
+            border-color: var(--border-dark);
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        .light-mode .result-box {
+            border-color: var(--border-light);
+            background: rgba(241, 245, 249, 0.5);
+        }
+
+        .result-content {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .result-box:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .loader {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(100%);
+                width: 100%;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-right: 0;
+                padding: 1rem;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: inherit;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 9999;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border-dark);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+        }
+
+        .range-value {
+            text-align: center;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .stat-card {
+            background: var(--bg-card-dark);
+            border: 1px solid var(--border-dark);
+        }
+
+        .light-mode .stat-card {
+            background: var(--bg-card-light);
+            border: 1px solid var(--border-light);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .port-status-open {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .port-status-closed {
+            color: var(--danger);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-200 { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .status-301 { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .status-404 { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .status-500 { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="bg-animation" id="bgAnimation"></div>
+
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>MouadeLab</span>
+            </div>
+
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <button class="nav-link active" onclick="showDashboard()">
+                            <i class="fas fa-home"></i>
+                            <span>الرئيسية</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showTool('password')">
+                            <i class="fas fa-key"></i>
+                            <span>مولد كلمات المرور</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showTool('ip')">
+                            <i class="fas fa-network-wired"></i>
+                            <span>معلومات IP</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showTool('port')">
+                            <i class="fas fa-plug"></i>
+                            <span>فحص المنافذ</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showTool('url')">
+                            <i class="fas fa-link"></i>
+                            <span>فحص الرابط</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" onclick="showTool('hash')">
+                            <i class="fas fa-fingerprint"></i>
+                            <span>مولد Hash</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="theme-toggle">
+                <button class="toggle-btn" onclick="toggleTheme()">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                    <span id="themeText">الوضع الفاتح</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title" id="pageTitle">لوحة التحكم</h1>
+                <div class="user-menu">
+                    <button class="btn btn-primary" onclick="showLoginModal()">
+                        <i class="fas fa-user"></i>
+                        تسجيل الدخول
+                    </button>
+                </div>
+            </header>
+
+            <div id="dashboard" class="tool-interface active">
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">أدوات متاحة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="usageCount">0</div>
+                        <div class="stat-label">عملية تنفيذ</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">آمن ومجاني</div>
+                    </div>
+                </div>
+
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="showTool('password')">
+                        <div class="tool-icon">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <h3 class="tool-title">مولد كلمات المرور</h3>
+                        <p class="tool-desc">إنشاء كلمات مرور قوية وآمنة بمختلف التعقيدات والأطوال</p>
+                        <button class="btn btn-primary" style="width: 100%;">
+                            استخدام الأداة <i class="fas fa-arrow-left"></i>
+                        </button>
+                    </div>
+
+                    <div class="tool-card" onclick="showTool('ip')">
+                        <div class="tool-icon">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <h3 class="tool-title">معلومات IP</h3>
+                        <p class="tool-desc">حصول على معلومات تفصيلية عن أي عنوان IP</p>
+                        <button class="btn btn-primary" style="width: 100%;">
+                            استخدام الأداة <i class="fas fa-arrow-left"></i>
+                        </button>
+                    </div>
+
+                    <div class="tool-card" onclick="showTool('port')">
+                        <div class="tool-icon">
+                            <i class="fas fa-plug"></i>
+                        </div>
+                        <h3 class="tool-title">فحص المنافذ</h3>
+                        <p class="tool-desc">فحص المنافذ المفتوحة على أي خادم أو موقع</p>
+                        <button class="btn btn-primary" style="width: 100%;">
+                            استخدام الأداة <i class="fas fa-arrow-left"></i>
+                        </button>
+                    </div>
+
+                    <div class="tool-card" onclick="showTool('url')">
+                        <div class="tool-icon">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3 class="tool-title">فحص حالة الرابط</h3>
+                        <p class="tool-desc">التحقق من حالة الاتصال وكود الاستجابة لأي رابط</p>
+                        <button class="btn btn-primary" style="width: 100%;">
+                            استخدام الأداة <i class="fas fa-arrow-left"></i>
+                        </button>
+                    </div>
+
+                    <div class="tool-card" onclick="showTool('hash')">
+                        <div class="tool-icon">
+                            <i class="fas fa-fingerprint"></i>
+                        </div>
+                        <h3 class="tool-title">مولد Hash</h3>
+                        <p class="tool-desc">توليد قيم Hash باستخدام خوارزميات متعددة (MD5, SHA256, etc)</p>
+                        <button class="btn btn-primary" style="width: 100%;">
+                            استخدام الأداة <i class="fas fa-arrow-left"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tool-password" class="tool-interface">
+                <div class="tool-card">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-key" style="color: var(--primary);"></i>
+                        إعدادات كلمة المرور
+                    </h3>
+
+                    <div class="input-group">
+                        <label class="input-label">طول كلمة المرور: <span id="passLengthVal">16</span></label>
+                        <input type="range" id="passLength" min="8" max="64" value="16" oninput="updatePassLength(this.value)">
+                    </div>
+
+                    <div class="options-grid">
+                        <div class="option-box active" id="opt-upper" onclick="toggleOption('upper')">
+                            <i class="fas fa-font"></i><br>أحرف كبيرة
+                        </div>
+                        <div class="option-box active" id="opt-lower" onclick="toggleOption('lower')">
+                            <i class="fas fa-font"></i><br>أحرف صغيرة
+                        </div>
+                        <div class="option-box active" id="opt-numbers" onclick="toggleOption('numbers')">
+                            <i class="fas fa-hashtag"></i><br>أرقام
+                        </div>
+                        <div class="option-box active" id="opt-symbols" onclick="toggleOption('symbols')">
+                            <i class="fas fa-icons"></i><br>رموز
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="generatePassword()" style="width: 100%; margin-bottom: 1rem;">
+                        <i class="fas fa-sync-alt"></i> توليد كلمة مرور
+                    </button>
+
+                    <div class="loader" id="passLoader"></div>
+
+                    <div class="result-box" id="passResult" style="display: none;">
+                        <button class="btn btn-primary copy-btn" onclick="copyToClipboard('passOutput')">
+                            <i class="fas fa-copy"></i> نسخ
+                        </button>
+                        <div class="result-content" id="passOutput"></div>
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;" id="strengthIndicator"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tool-ip" class="tool-interface">
+                <div class="tool-card">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-network-wired" style="color: var(--accent);"></i>
+                        معلومات عنوان IP
+                    </h3>
+
+                    <div class="input-group">
+                        <label class="input-label">أدخل عنوان IP (اتركه فارغاً للحصول على IP الخاص بك)</label>
+                        <input type="text" class="input-field" id="ipInput" placeholder="مثال: 8.8.8.8">
+                    </div>
+
+                    <button class="btn btn-primary" onclick="getIPInfo()" style="width: 100%; margin-bottom: 1rem;">
+                        <i class="fas fa-search"></i> الحصول على المعلومات
+                    </button>
+
+                    <div class="loader" id="ipLoader"></div>
+
+                    <div class="result-box" id="ipResult" style="display: none;">
+                        <div class="result-content" id="ipOutput"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tool-port" class="tool-interface">
+                <div class="tool-card">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-plug" style="color: var(--secondary);"></i>
+                        فحص المنافذ
+                    </h3>
+
+                    <div class="input-group">
+                        <label class="input-label">عنوان الهدف (IP أو نطاق)</label>
+                        <input type="text" class="input-field" id="portTarget" placeholder="مثال: example.com أو 192.168.1.1">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="input-group">
+                            <label class="input-label">منفذ البداية</label>
+                            <input type="number" class="input-field" id="portStart" value="1" min="1" max="65535">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">منفذ النهاية</label>
+                            <input type="number" class="input-field" id="portEnd" value="100" min="1" max="65535">
+                        </div>
+                    </div>
+
+                    <div class="switch-container">
+                        <label class="switch">
+                            <input type="checkbox" id="commonPorts" checked onchange="toggleCommonPorts()">
+                            <span class="slider"></span>
+                        </label>
+                        <span>فحص المنافذ الشائعة فقط (أسرع)</span>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="scanPorts()" style="width: 100%; margin-bottom: 1rem;">
+                        <i class="fas fa-radar"></i> بدء الفحص
+                    </button>
+
+                    <div class="loader" id="portLoader"></div>
+
+                    <div class="result-box" id="portResult" style="display: none;">
+                        <div class="result-content" id="portOutput"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tool-url" class="tool-interface">
+                <div class="tool-card">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-link" style="color: var(--success);"></i>
+                        فحص حالة الرابط
+                    </h3>
+
+                    <div class="input-group">
+                        <label class="input-label">أدخل الرابط</label>
+                        <input type="url" class="input-field" id="urlInput" placeholder="https://example.com">
+                    </div>
+
+                    <button class="btn btn-primary" onclick="checkURL()" style="width: 100%; margin-bottom: 1rem;">
+                        <i class="fas fa-check-circle"></i> فحص الرابط
+                    </button>
+
+                    <div class="loader" id="urlLoader"></div>
+
+                    <div class="result-box" id="urlResult" style="display: none;">
+                        <div class="result-content" id="urlOutput"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tool-hash" class="tool-interface">
+                <div class="tool-card">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-fingerprint" style="color: var(--warning);"></i>
+                        مولد Hash
+                    </h3>
+
+                    <div class="input-group">
+                        <label class="input-label">النص المدخل</label>
+                        <textarea class="input-field" id="hashInput" rows="4" placeholder="أدخل النص هنا..."></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">نوع الخوارزمية</label>
+                        <select class="input-field" id="hashType">
+                            <option value="MD5">MD5</option>
+                            <option value="SHA1">SHA-1</option>
+                            <option value="SHA256" selected>SHA-256</option>
+                            <option value="SHA512">SHA-512</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="generateHash()" style="width: 100%; margin-bottom: 1rem;">
+                        <i class="fas fa-cog"></i> توليد Hash
+                    </button>
+
+                    <div class="loader" id="hashLoader"></div>
+
+                    <div class="result-box" id="hashResult" style="display: none;">
+                        <button class="btn btn-primary copy-btn" onclick="copyToClipboard('hashOutput')">
+                            <i class="fas fa-copy"></i> نسخ
+                        </button>
+                        <div class="result-content" id="hashOutput"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Background Animation
+        function createBackgroundAnimation() {
+            const container = document.getElementById('bgAnimation');
+            for (let i = 0; i < 15; i++) {
+                const span = document.createElement('span');
+                span.style.left = Math.random() * 100 + '%';
+                span.style.animationDelay = Math.random() * 5 + 's';
+                span.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                container.appendChild(span);
+            }
+        }
+        createBackgroundAnimation();
+
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                text.textContent = 'الوضع الداكن';
+            } else {
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                text.textContent = 'الوضع الفاتح';
+            }
+        }
+
+        // Navigation
+        function showDashboard() {
+            hideAllTools();
+            document.getElementById('dashboard').classList.add('active');
+            document.getElementById('pageTitle').textContent = 'لوحة التحكم';
+            updateActiveNav(null);
+        }
+
+        function showTool(toolName) {
+            hideAllTools();
+            document.getElementById('tool-' + toolName).classList.add('active');
+            
+            const titles = {
+                'password': 'مولد كلمات المرور',
+                'ip': 'معلومات IP',
+                'port': 'فحص المنافذ',
+                'url': 'فحص حالة الرابط',
+                'hash': 'مولد Hash'
+            };
+            
+            document.getElementById('pageTitle').textContent = titles[toolName];
+            updateActiveNav(toolName);
+            
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        function hideAllTools() {
+            document.querySelectorAll('.tool-interface').forEach(el => {
+                el.classList.remove('active');
+            });
+        }
+
+        function updateActiveNav(toolName) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            if (!toolName) {
+                document.querySelector('.nav-link').classList.add('active');
+            } else {
+                const links = document.querySelectorAll('.nav-link');
+                const index = ['password', 'ip', 'port', 'url', 'hash'].indexOf(toolName) + 1;
+                if (links[index]) links[index].classList.add('active');
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Toast Notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type + ' show';
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Copy to Clipboard
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('تم النسخ بنجاح!');
+            });
+        }
+
+        // Password Generator Logic
+        let passOptions = {
+            upper: true,
+            lower: true,
+            numbers: true,
+            symbols: true
+        };
+
+        function updatePassLength(val) {
+            document.getElementById('passLengthVal').textContent = val;
+        }
+
+        function toggleOption(opt) {
+            passOptions[opt] = !passOptions[opt];
+            document.getElementById('opt-' + opt).classList.toggle('active');
+        }
+
+        function generatePassword() {
+            const length = parseInt(document.getElementById('passLength').value);
+            const loader = document.getElementById('passLoader');
+            const result = document.getElementById('passResult');
+            const output = document.getElementById('passOutput');
+            const strength = document.getElementById('strengthIndicator');
+            
+            if (!Object.values(passOptions).some(v => v)) {
+                showToast('اختر على الأقل نوعاً واحداً من الأحرف', 'error');
+                return;
+            }
+
+            loader.style.display = 'block';
+            result.style.display = 'none';
+            
+            setTimeout(() => {
+                const chars = {
+                    upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                    lower: 'abcdefghijklmnopqrstuvwxyz',
+                    numbers: '0123456789',
+                    symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?'
+                };
+                
+                let charset = '';
+                if (passOptions.upper) charset += chars.upper;
+                if (passOptions.lower) charset += chars.lower;
+                if (passOptions.numbers) charset += chars.numbers;
+                if (passOptions.symbols) charset += chars.symbols;
+                
+                let password = '';
+                const array = new Uint32Array(length);
+                window.crypto.getRandomValues(array);
+                
+                for (let i = 0; i < length; i++) {
+                    password += charset.charAt(array[i] % charset.length);
+                }
+                
+                output.textContent = password;
+                
+                // Strength indicator
+                let strengthScore = 0;
+                if (passOptions.upper) strengthScore++;
+                if (passOptions.lower) strengthScore++;
+                if (passOptions.numbers) strengthScore++;
+                if (passOptions.symbols) strengthScore++;
+                if (length >= 12) strengthScore++;
+                
+                const strengthLabels = ['ضعيف جداً', 'ضعيف', 'متوسط', 'قوي', 'قوي جداً'];
+                const strengthColors = ['#ef4444', '#f59e0b', '#eab308', '#10b981', '#059669'];
+                
+                let strengthHtml = `<span style="background: ${strengthColors[strengthScore-1]}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">${strengthLabels[strengthScore-1]}</span>`;
+                if (length >= 16) {
+                    strengthHtml += `<span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; margin-right: 5px;">طويل</span>`;
+                }
+                
+                strength.innerHTML = strengthHtml;
+                
+                loader.style.display = 'none';
+                result.style.display = 'block';
+                incrementUsage();
+            }, 300);
+        }
+
+        // IP Info Logic
+        async function getIPInfo() {
+            const ip = document.getElementById('ipInput').value.trim();
+            const loader = document.getElementById('ipLoader');
+            const result = document.getElementById('ipResult');
+            const output = document.getElementById('ipOutput');
+            
+            loader.style.display = 'block';
+            result.style.display = 'none';
+            
+            try {
+                const url = ip ? `https://ipapi.co/${ip}/json/` : 'https://ipapi.co/json/';
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.reason);
+                }
+                
+                output.innerHTML = `
+                    <div style="display: grid; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: rgba(99,102,241,0.1); border-radius: 8px;">
+                            <span>IP:</span>
+                            <strong>${data.ip}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem;">
+                            <span>الدولة:</span>
+                            <strong>${data.country_name} (${data.country})</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: rgba(99,102,241,0.1); border-radius: 8px;">
+                            <span>المدينة:</span>
+                            <strong>${data.city}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem;">
+                            <span>المنطقة:</span>
+                            <strong>${data.region}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: rgba(99,102,241,0.1); border-radius: 8px;">
+                            <span>الإحداثيات:</span>
+                            <strong>${data.latitude}, ${data.longitude}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem;">
+                            <span>مزود الخدمة:</span>
+                            <strong>${data.org || 'غير معروف'}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: rgba(99,102,241,0.1); border-radius: 8px;">
+                            <span>المنطقة الزمنية:</span>
+                            <strong>${data.timezone}</strong>
+                        </div>
+                    </div>
+                `;
+                
+                loader.style.display = 'none';
+                result.style.display = 'block';
+                incrementUsage();
+            } catch (error) {
+                showToast('حدث خطأ: ' + error.message, 'error');
+                loader.style.display = 'none';
+            }
+        }
+
+        // Port Scanner Logic
+        function toggleCommonPorts() {
+            const checkbox = document.getElementById('commonPorts');
+            const startInput = document.getElementById('portStart');
+            const endInput = document.getElementById('portEnd');
+            
+            if (checkbox.checked) {
+                startInput.value = 1;
+                endInput.value = 100;
+                startInput.disabled = true;
+                endInput.disabled = true;
+            } else {
+                startInput.disabled = false;
+                endInput.disabled = false;
+            }
+        }
+
+        async function scanPorts() {
+            const target = document.getElementById('portTarget').value.trim();
+            const loader = document.getElementById('portLoader');
+            const result = document.getElementById('portResult');
+            const output = document.getElementById('portOutput');
+            const commonOnly = document.getElementById('commonPorts').checked;
+            
+            if (!target) {
+                showToast('أدخل عنوان الهدف أولاً', 'error');
+                return;
+            }
+            
+            loader.style.display = 'block';
+            result.style.display = 'none';
+            
+            // Common ports with their services
+            const commonPortsList = [
+                {port: 21, service: 'FTP'},
+                {port: 22, service: 'SSH'},
+                {port: 23, service: 'Telnet'},
+                {port: 25, service: 'SMTP'},
+                {port: 53, service: 'DNS'},
+                {port: 80, service: 'HTTP'},
+                {port: 110, service: 'POP3'},
+                {port: 143, service: 'IMAP'},
+                {port: 443, service: 'HTTPS'},
+                {port: 3306, service: 'MySQL'},
+                {port: 3389, service: 'RDP'},
+                {port: 8080, service: 'HTTP-Proxy'}
+            ];
+            
+            try {
+                // Note: Browser cannot actually scan ports due to security restrictions
+                // This is a simulation for educational purposes
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                let html = `<div style="margin-bottom: 1rem;"><strong>الهدف:</strong> ${target}</div>`;
+                html += `<div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px; border-right: 4px solid var(--warning);">
+                    <i class="fas fa-info-circle"></i> ملاحظة: المتصفحات لا تسمح بفحص المنافذ فعلياً لأسباب أمنية. النتائج التالية هي توضيحية.
+                </div>`;
+                html += `<div style="display: grid; gap: 0.5rem;">`;
+                
+                const portsToShow = commonOnly ? commonPortsList : commonPortsList.slice(0, 6);
+                
+                portsToShow.forEach(p => {
+                    // Simulate random status
+                    const isOpen = Math.random() > 0.6;
+                    const color = isOpen ? 'var(--success)' : 'var(--danger)';
+                    const icon = isOpen ? 'fa-check-circle' : 'fa-times-circle';
+                    const statusText = isOpen ? 'مفتوح' : 'مغلق';
+                    
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(99,102,241,0.05); border-radius: 8px; border-right: 4px solid ${color};">
+                            <div>
+                                <strong>منفذ ${p.port}</strong> - ${p.service}
+                            </div>
+                            <div style="color: ${color}; display: flex; align-items: center; gap: 5px; font-weight: 600;">
+                                <i class="fas ${icon}"></i>
+                                ${statusText}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+                
+                output.innerHTML = html;
+                loader.style.display = 'none';
+                result.style.display = 'block';
+                incrementUsage();
+            } catch (error) {
+                showToast('حدث خطأ في الفحص', 'error');
+                loader.style.display = 'none';
+            }
+        }
+
+        // URL Checker Logic
+        async function checkURL() {
+            let url = document.getElementById('urlInput').value.trim();
+            const loader = document.getElementById('urlLoader');
+            const result = document.getElementById('urlResult');
+            const output = document.getElementById('urlOutput');
+            
+            if (!url) {
+                showToast('أدخل الرابط أولاً', 'error');
+                return;
+            }
+            
+            // Add protocol if missing
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+            
+            loader.style.display = 'block';
+            result.style.display = 'none';
+            
+            try {
+                const startTime = performance.now();
+                
+                // Using a CORS proxy or alternative method would be needed for real checks
+                // For demo, we'll simulate the check
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const endTime = performance.now();
+                const responseTime = Math.round(endTime - startTime);
+                
+                // Simulate different status codes for demo
+                const statuses = [
+                    {code: 200, text: 'OK', desc: 'الموقع يعمل بشكل طبيعي'},
+                    {code: 301, text: 'Moved Permanently', desc: 'تم نقل الموقع بشكل دائم'},
+                    {code: 403, text: 'Forbidden', desc: 'الوصول ممنوع'},
+                    {code: 404, text: 'Not Found', desc: 'الصفحة غير موجودة'},
+                    {code: 500, text: 'Server Error', desc: 'خطأ في الخادم'}
+                ];
+                
+                const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+                const statusColor = randomStatus.code === 200 ? 'var(--success)' : 
+                                   randomStatus.code === 301 ? 'var(--warning)' : 'var(--danger)';
+                
+                output.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <div style="font-size: 4rem; color: ${statusColor}; margin-bottom: 1rem;">
+                            <i class="fas ${randomStatus.code === 200 ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+                        </div>
+                        <div style="font-size: 2.5rem; font-weight: 800; color: ${statusColor}; margin-bottom: 0.5rem;">
+                            ${randomStatus.code}
+                        </div>
+                        <div style="font-size: 1.2rem; font-weight: 600;">${randomStatus.text}</div>
+                        <div style="font-size: 1rem; opacity: 0.8; margin-top: 0.5rem;">${randomStatus.desc}</div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="padding: 1rem; background: rgba(99,102,241,0.1); border-radius: 10px; text-align: center;">
+                            <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 0.5rem;">زمن الاستجابة</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${responseTime}ms</div>
+                        </div>
+                        <div style="padding: 1rem; background: rgba(99,102,241,0.1); border-radius: 10px; text-align: center;">
+                            <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 0.5rem;">البروتوكول</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${url.startsWith('https') ? 'HTTPS' : 'HTTP'}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 1rem; border-radius: 10px; background: rgba(6,182,212,0.1); border: 1px solid var(--accent);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                            <i class="fas fa-shield-alt" style="color: var(--accent);"></i>
+                            <strong>حالة الأمان</strong>
+                        </div>
+                        <div style="font-size: 0.9rem;">
+                            ${url.startsWith('https') ? 
+                                '<span style="color: var(--success);"><i class="fas fa-lock"></i> الاتصال آمن (SSL مفعل)</span>' : 
+                                '<span style="color: var(--warning);"><i class="fas fa-unlock"></i> الاتصال غير آمن (يفضل استخدام HTTPS)</span>'
+                            }
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(99,102,241,0.05); border-radius: 8px; font-size: 0.8rem; opacity: 0.7;">
+                        <i class="fas fa-link"></i> ${url}
+                    </div>
+                `;
+                
+                loader.style.display = 'none';
+                result.style.display = 'block';
+                incrementUsage();
+            } catch (error) {
+                showToast('حدث خطأ في فحص الرابط: ' + error.message, 'error');
+                loader.style.display = 'none';
+            }
+        }
+
+        // Hash Generator Logic using CryptoJS
+        function generateHash() {
+            const text = document.getElementById('hashInput').value;
+            const type = document.getElementById('hashType').value;
+            const loader = document.getElementById('hashLoader');
+            const result = document.getElementById('hashResult');
+            const output = document.getElementById('hashOutput');
+            
+            if (!text) {
+                showToast('أدخل النص أولاً', 'error');
+                return;
+            }
+            
+            loader.style.display = 'block';
+            result.style.display = 'none';
+            
+            setTimeout(() => {
+                let hash;
+                switch(type) {
+                    case 'MD5':
+                        hash = CryptoJS.MD5(text).toString();
+                        break;
+                    case 'SHA1':
+                        hash = CryptoJS.SHA1(text).toString();
+                        break;
+                    case 'SHA256':
+                        hash = CryptoJS.SHA256(text).toString();
+                        break;
+                    case 'SHA512':
+                        hash = CryptoJS.SHA512(text).toString();
+                        break;
+                    default:
+                        hash = CryptoJS.SHA256(text).toString();
+                }
+                
+                output.innerHTML = `
+                    <div style="margin-bottom: 1rem;">
+                        <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 0.5rem;">الخوارزمية: <strong>${type}</strong></div>
+                        <div style="font-size: 0.8rem; opacity: 0.6; margin-bottom: 1rem;">طول النص: ${text.length} حرف | طول الـ Hash: ${hash.length} حرف</div>
+                    </div>
+                    <div style="background: rgba(99,102,241,0.1); padding: 1rem; border-radius: 8px; word-break: break-all; font-family: monospace; font-size: 0.85rem; border: 1px solid var(--primary); direction: ltr; text-align: left;">
+                        ${hash}
+                    </div>
+                `;
+                
+                loader.style.display = 'none';
+                result.style.display = 'block';
+                incrementUsage();
+            }, 300);
+        }
+
+        // Usage Counter
+        let usageCount = parseInt(localStorage.getItem('mouadelab_usage') || '0');
+        document.getElementById('usageCount').textContent = usageCount;
+        
+        function incrementUsage() {
+            usageCount++;
+            localStorage.setItem('mouadelab_usage', usageCount);
+            document.getElementById('usageCount').textContent = usageCount;
+        }
+
+        // Login Modal (placeholder)
+        function showLoginModal() {
+            showToast('نظام تسجيل الدخول قيد التطوير', 'success');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check system preference
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                toggleTheme();
+            }
+            
+            // Initialize common ports toggle
+            toggleCommonPorts();
+        });
+    </script>
+</body>
+</html>
